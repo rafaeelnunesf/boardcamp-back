@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
   getCategories,
   PostCategories,
-} from "../controllers/categoriesController.js";
+} from "../../controllers/categoriesController.js";
 const categoriesRoute = Router();
 
 categoriesRoute.get("/categories", getCategories);
