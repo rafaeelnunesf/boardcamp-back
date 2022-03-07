@@ -7,15 +7,19 @@ import {
 } from "../controllers/customersController.js";
 
 import postCustomersValidationMiddleware from "../middlewares/postCustomersValidationMiddleware.js";
-const gamesRoute = Router();
+const customersRoute = Router();
 
-gamesRoute.get("/customers", getCustomers);
-gamesRoute.post("/customers", postCustomersValidationMiddleware, postCustomers);
-gamesRoute.get("/customers/:id", getCustomersById);
-gamesRoute.put(
+customersRoute.get("/customers", getCustomers);
+customersRoute.post(
+  "/customers",
+  postCustomersValidationMiddleware,
+  postCustomers
+);
+customersRoute.get("/customers/:id", getCustomersById);
+customersRoute.put(
   "/customers/:id",
   postCustomersValidationMiddleware,
   putCustomersById
 );
 
-export default gamesRoute;
+export default customersRoute;
