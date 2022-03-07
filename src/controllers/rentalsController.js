@@ -1,5 +1,7 @@
 import { connection } from "../db.js";
 import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime.js";
+dayjs.extend(relativeTime);
 
 export async function getRentals(req, res) {
   let customerIdquery = "";
@@ -33,13 +35,12 @@ export async function getRentals(req, res) {
       categories
     ON
       games."categoryId"=categories.id
-      ${customerIdquery}
-      ${gameIdquery}`,
+    ${customerIdquery}
+    ${gameIdquery}`,
     rowMode: "array",
   });
   res.send(
     result.rows.map((row) => {
-      console.log(row);
       let [
         id,
         customerId,
@@ -55,6 +56,7 @@ export async function getRentals(req, res) {
         categoryName,
       ] = row;
       rentDate = dayjs(rentDate).format("YYYY-MM-DD");
+      returnDate = dayjs(returnDate).format("YYYY-MM-DD");
       return {
         id,
         customerId,
@@ -70,7 +72,6 @@ export async function getRentals(req, res) {
     })
   );
 }
-
 export async function postRentals(req, res) {
   let { customerId, gameId, daysRented } = req.body;
   try {
@@ -107,31 +108,52 @@ export async function postRentals(req, res) {
     res.sendStatus(500);
   }
 }
-export async function putRentalsById(req, res) {
-  /* let { name, phone, cpf, birthday } = req.body;
+export async function postRentalsById(req, res) {
   const { id } = req.params;
   try {
-    const cpfResult = await connection.query(
-      "SELECT * FROM customers WHERE cpf=$1",
-      [cpf]
+    const idResult = await connection.query(
+      `SELECT 
+        rentals.*,
+        games."pricePerDay" 
+      FROM 
+        rentals 
+      JOIN 
+        games
+      ON
+        rentals."gameId"=games.id
+      WHERE rentals.id=$1
+     `,
+      [id]
     );
-    if (cpfResult.rows.length !== 0) return res.sendStatus(409);
+    if (idResult.rows.length === 0) return res.sendStatus(404);
+
+    let { delayFee, returnDate, rentDate, daysRented } = idResult.rows[0];
+    if (returnDate) return res.sendStatus(400);
+
+    returnDate = dayjs().format("YYYY-MM-DD");
+    rentDate = dayjs(rentDate).format("YYYY-MM-DD");
+
+    if (dayjs(returnDate).diff(rentDate, "day") > daysRented) {
+      const daysOfDelay = dayjs(returnDate).diff(rentDate, "day") - daysRented;
+      delayFee = idResult.rows[0].pricePerDay * daysOfDelay;
+    }
 
     await connection.query(
       `
       UPDATE 
-        customers
+        rentals
       SET 
-        name=$1, phone=$2, cpf=$3, birthday=$4
+        "returnDate"=$1, 
+        "delayFee"=$2
       WHERE 
-        id=$5`,
-      [name, phone, cpf, birthday, id]
+        id=$3`,
+      [returnDate, delayFee, id]
     );
     res.sendStatus(200);
   } catch (error) {
     console.log(error);
     res.sendStatus(500);
-  } */
+  }
 }
 export async function getRentalsById(req, res) {
   /* const { id } = req.params;

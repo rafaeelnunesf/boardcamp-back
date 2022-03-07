@@ -3,7 +3,7 @@ import {
   getRentals,
   postRentals,
   getRentalsById,
-  putRentalsById,
+  postRentalsById,
 } from "../controllers/rentalsController.js";
 
 import postRentalValidationMiddleware from "../middlewares/postRentalsValidationMiddleware.js";
@@ -11,8 +11,8 @@ const rentalsRoute = Router();
 
 rentalsRoute.post("/rentals", postRentalValidationMiddleware, postRentals);
 rentalsRoute.get("/rentals", getRentals);
-/* rentalsRoute.get("/rentals/:id", getRentalsById);
-rentalsRoute.put(
+rentalsRoute.post("/rentals/:id/return", postRentalsById);
+/* rentalsRoute.put(
   "/rentals/:id",
   postRentalValidationMiddleware,
   putRentalsById
