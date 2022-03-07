@@ -21,6 +21,23 @@ export async function getRentals(req, res) {
   if (req.query.startDate)
     startDateQuery = `WHERE "rentDate" >=${req.query.startDate}`;
 
+  const orderByFilter = {
+    id: 1,
+    customerId: 2,
+    gameId: 3,
+    rentDate: 4,
+    daysRented: 5,
+    returnDate: 6,
+    originalPrice: 7,
+    delayFee: 8,
+  };
+  let orderBy = "";
+  if (req.query.order && orderByFilter[req.query.order]) {
+    if (req.query.desc)
+      orderBy = `ORDER BY ${orderByFilter[req.query.order]} DESC`;
+    else orderBy = `ORDER BY ${orderByFilter[req.query.order]}`;
+  }
+
   const result = await connection.query({
     text: `
     SELECT 
@@ -46,7 +63,8 @@ export async function getRentals(req, res) {
     ${customerIdquery}
     ${gameIdquery}
     ${statusQuery}
-    ${startDateQuery}`,
+    ${startDateQuery}
+    ${orderBy}`,
     rowMode: "array",
   });
   res.send(
@@ -102,7 +120,6 @@ export async function postRentals(req, res) {
     );
     if (gameIdResult.rows.length === 0)
       return res.status(400).send("gameId error");
-
     const rentDate = dayjs().format("YYYY-MM-DD");
     const originalPrice = gameIdResult.rows[0].pricePerDay * daysRented;
     let { stockTotal } = gameIdResult.rows[0];

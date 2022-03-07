@@ -6,6 +6,19 @@ export async function getCustomers(req, res) {
   if (req.query.cpf) {
     query = `WHERE cpf LIKE  '${req.query.cpf}%'`;
   }
+  const orderByFilter = {
+    id: 1,
+    name: 2,
+    phone: 3,
+    cpf: 4,
+    birthday: 5,
+  };
+  let orderBy = "";
+  if (req.query.order && orderByFilter[req.query.order]) {
+    if (req.query.desc)
+      orderBy = `ORDER BY ${orderByFilter[req.query.order]} DESC`;
+    else orderBy = `ORDER BY ${orderByFilter[req.query.order]}`;
+  }
   const result = await connection.query({
     text: `
       SELECT 
@@ -13,6 +26,7 @@ export async function getCustomers(req, res) {
       FROM 
         customers
       ${query}
+      ${orderBy}
     `,
     rowMode: "array",
   });

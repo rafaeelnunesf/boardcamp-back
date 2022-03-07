@@ -1,7 +1,23 @@
 import { connection } from "../db.js";
 
 export async function getCategories(req, res) {
-  const categories = await connection.query("SELECT * FROM categories");
+  const orderByFilter = {
+    id: 1,
+    name: 2,
+  };
+  let orderBy = "";
+  if (req.query.order && orderByFilter[req.query.order]) {
+    if (req.query.desc)
+      orderBy = `ORDER BY ${orderByFilter[req.query.order]} DESC`;
+    else orderBy = `ORDER BY ${orderByFilter[req.query.order]}`;
+  }
+  const categories = await connection.query(`
+    SELECT 
+      * 
+    FROM 
+      categories
+    ${orderBy}
+    `);
 
   res.send(categories.rows);
 }

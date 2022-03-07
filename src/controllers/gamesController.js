@@ -5,6 +5,20 @@ export async function getGames(req, res) {
   if (req.query.name) {
     query = `WHERE name iLIKE  '${req.query.name}%'`;
   }
+  const orderByFilter = {
+    id: 1,
+    name: 2,
+    image: 3,
+    stockTotal: 4,
+    categoryId: 5,
+    pricePerDay: 6,
+  };
+  let orderBy = "";
+  if (req.query.order && orderByFilter[req.query.order]) {
+    if (req.query.desc)
+      orderBy = `ORDER BY ${orderByFilter[req.query.order]} DESC`;
+    else orderBy = `ORDER BY ${orderByFilter[req.query.order]}`;
+  }
   const result = await connection.query({
     text: `
       SELECT 
@@ -12,6 +26,7 @@ export async function getGames(req, res) {
       FROM 
         games
       ${query}
+      ${orderBy}
     `,
     rowMode: "array",
   });
