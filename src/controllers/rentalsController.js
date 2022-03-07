@@ -5,13 +5,21 @@ dayjs.extend(relativeTime);
 
 export async function getRentals(req, res) {
   let customerIdquery = "";
-  if (req.query.customerId) {
+  if (req.query.customerId)
     customerIdquery = `WHERE "customerId"=${req.query.customerId}`;
-  }
+
   let gameIdquery = "";
-  if (req.query.gameId) {
-    gameIdquery = `WHERE "gameId"=${req.query.gameId}`;
+  if (req.query.gameId) gameIdquery = `WHERE "gameId"=${req.query.gameId}`;
+
+  let statusQuery = "";
+  if (req.query.status) {
+    if (req.query.status === "open") statusQuery = `WHERE "returnDate" IS NULL`;
+    if (req.query.status === "closed")
+      statusQuery = `WHERE "returnDate" IS NOT NULL`;
   }
+  let startDateQuery = "";
+  if (req.query.startDate)
+    startDateQuery = `WHERE "rentDate" >=${req.query.startDate}`;
 
   const result = await connection.query({
     text: `
@@ -36,7 +44,9 @@ export async function getRentals(req, res) {
     ON
       games."categoryId"=categories.id
     ${customerIdquery}
-    ${gameIdquery}`,
+    ${gameIdquery}
+    ${statusQuery}
+    ${startDateQuery}`,
     rowMode: "array",
   });
   res.send(
@@ -56,7 +66,7 @@ export async function getRentals(req, res) {
         categoryName,
       ] = row;
       rentDate = dayjs(rentDate).format("YYYY-MM-DD");
-      returnDate = dayjs(returnDate).format("YYYY-MM-DD");
+      returnDate && dayjs(returnDate).format("YYYY-MM-DD");
       return {
         id,
         customerId,
@@ -92,6 +102,7 @@ export async function postRentals(req, res) {
     );
     if (gameIdResult.rows.length === 0)
       return res.status(400).send("gameId error");
+
     const rentDate = dayjs().format("YYYY-MM-DD");
     const originalPrice = gameIdResult.rows[0].pricePerDay * daysRented;
     let { stockTotal } = gameIdResult.rows[0];
