@@ -1,19 +1,21 @@
 import { connection } from "../db.js";
 import dayjs from "dayjs";
+import pkg from "sqlstring";
+const { escape } = pkg;
 
 export async function getCustomers(req, res) {
   let query = "";
   if (req.query.cpf) {
-    query = `WHERE cpf LIKE  '${req.query.cpf}%'`;
+    query = `WHERE cpf LIKE  '${escape(req.query.cpf)}%'`;
   }
   let offset = "";
   if (req.query.offset) {
-    offset = `OFFSET ${req.query.offset}`;
+    offset = `OFFSET ${escape(req.query.offset)}`;
   }
 
   let limit = "";
   if (req.query.limit) {
-    limit = `LIMIT ${req.query.limit}`;
+    limit = `LIMIT ${escape(req.query.limit)}`;
   }
   const orderByFilter = {
     id: 1,
@@ -25,8 +27,8 @@ export async function getCustomers(req, res) {
   let orderBy = "";
   if (req.query.order && orderByFilter[req.query.order]) {
     if (req.query.desc)
-      orderBy = `ORDER BY ${orderByFilter[req.query.order]} DESC`;
-    else orderBy = `ORDER BY ${orderByFilter[req.query.order]}`;
+      orderBy = `ORDER BY ${escape(orderByFilter[req.query.order])} DESC`;
+    else orderBy = `ORDER BY ${escape(orderByFilter[req.query.order])}`;
   }
   const result = await connection.query({
     text: `

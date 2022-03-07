@@ -1,14 +1,16 @@
 import { connection } from "../db.js";
+import pkg from "sqlstring";
+const { escape } = pkg;
 
 export async function getCategories(req, res) {
   let offset = "";
   if (req.query.offset) {
-    offset = `OFFSET ${req.query.offset}`;
+    offset = `OFFSET ${escape(req.query.offset)}`;
   }
 
   let limit = "";
   if (req.query.limit) {
-    limit = `LIMIT ${req.query.limit}`;
+    limit = `LIMIT ${escape(req.query.limit)}`;
   }
   const orderByFilter = {
     id: 1,
@@ -17,8 +19,8 @@ export async function getCategories(req, res) {
   let orderBy = "";
   if (req.query.order && orderByFilter[req.query.order]) {
     if (req.query.desc)
-      orderBy = `ORDER BY ${orderByFilter[req.query.order]} DESC`;
-    else orderBy = `ORDER BY ${orderByFilter[req.query.order]}`;
+      orderBy = `ORDER BY ${escape(orderByFilter[req.query.order])} DESC`;
+    else orderBy = `ORDER BY ${escape(orderByFilter[req.query.order])}`;
   }
   const categories = await connection.query(`
     SELECT 

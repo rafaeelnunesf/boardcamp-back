@@ -2,14 +2,17 @@ import { connection } from "../db.js";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
 dayjs.extend(relativeTime);
+import pkg from "sqlstring";
+const { escape } = pkg;
 
 export async function getRentals(req, res) {
   let customerIdquery = "";
   if (req.query.customerId)
-    customerIdquery = `WHERE "customerId"=${req.query.customerId}`;
+    customerIdquery = `WHERE "customerId"=${escape(req.query.customerId)}`;
 
   let gameIdquery = "";
-  if (req.query.gameId) gameIdquery = `WHERE "gameId"=${req.query.gameId}`;
+  if (req.query.gameId)
+    gameIdquery = `WHERE "gameId"=${escape(req.query.gameId)}`;
 
   let statusQuery = "";
   if (req.query.status) {
@@ -19,16 +22,16 @@ export async function getRentals(req, res) {
   }
   let startDateQuery = "";
   if (req.query.startDate)
-    startDateQuery = `WHERE "rentDate" >=${req.query.startDate}`;
+    startDateQuery = `WHERE "rentDate" >=${escape(req.query.startDate)}`;
 
   let offset = "";
   if (req.query.offset) {
-    offset = `OFFSET ${req.query.offset}`;
+    offset = `OFFSET ${escape(req.query.offset)}`;
   }
 
   let limit = "";
   if (req.query.limit) {
-    limit = `LIMIT ${req.query.limit}`;
+    limit = `LIMIT ${escape(req.query.limit)}`;
   }
 
   const orderByFilter = {
