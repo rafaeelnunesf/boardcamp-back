@@ -40,7 +40,7 @@ export async function getCustomersById(req, res) {
 
   if (result.rows.length === 0) return res.sendStatus(404);
 
-  res.send(result.rows);
+  res.send(result.rows[0]);
 }
 export async function postCustomers(req, res) {
   let { name, phone, cpf, birthday } = req.body;
