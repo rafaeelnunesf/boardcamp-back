@@ -1,6 +1,15 @@
 import { connection } from "../db.js";
 
 export async function getCategories(req, res) {
+  let offset = "";
+  if (req.query.offset) {
+    offset = `OFFSET ${req.query.offset}`;
+  }
+
+  let limit = "";
+  if (req.query.limit) {
+    limit = `LIMIT ${req.query.limit}`;
+  }
   const orderByFilter = {
     id: 1,
     name: 2,
@@ -16,6 +25,8 @@ export async function getCategories(req, res) {
       * 
     FROM 
       categories
+    ${offset}
+    ${limit}
     ${orderBy}
     `);
 

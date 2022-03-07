@@ -6,6 +6,15 @@ export async function getCustomers(req, res) {
   if (req.query.cpf) {
     query = `WHERE cpf LIKE  '${req.query.cpf}%'`;
   }
+  let offset = "";
+  if (req.query.offset) {
+    offset = `OFFSET ${req.query.offset}`;
+  }
+
+  let limit = "";
+  if (req.query.limit) {
+    limit = `LIMIT ${req.query.limit}`;
+  }
   const orderByFilter = {
     id: 1,
     name: 2,
@@ -26,6 +35,8 @@ export async function getCustomers(req, res) {
       FROM 
         customers
       ${query}
+      ${offset}
+      ${limit}
       ${orderBy}
     `,
     rowMode: "array",

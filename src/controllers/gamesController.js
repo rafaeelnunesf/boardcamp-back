@@ -5,6 +5,15 @@ export async function getGames(req, res) {
   if (req.query.name) {
     query = `WHERE name iLIKE  '${req.query.name}%'`;
   }
+  let offset = "";
+  if (req.query.offset) {
+    offset = `OFFSET ${req.query.offset}`;
+  }
+
+  let limit = "";
+  if (req.query.limit) {
+    limit = `LIMIT ${req.query.limit}`;
+  }
   const orderByFilter = {
     id: 1,
     name: 2,
@@ -26,6 +35,8 @@ export async function getGames(req, res) {
       FROM 
         games
       ${query}
+      ${offset}
+      ${limit}
       ${orderBy}
     `,
     rowMode: "array",

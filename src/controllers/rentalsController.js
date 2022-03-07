@@ -21,6 +21,16 @@ export async function getRentals(req, res) {
   if (req.query.startDate)
     startDateQuery = `WHERE "rentDate" >=${req.query.startDate}`;
 
+  let offset = "";
+  if (req.query.offset) {
+    offset = `OFFSET ${req.query.offset}`;
+  }
+
+  let limit = "";
+  if (req.query.limit) {
+    limit = `LIMIT ${req.query.limit}`;
+  }
+
   const orderByFilter = {
     id: 1,
     customerId: 2,
@@ -64,6 +74,8 @@ export async function getRentals(req, res) {
     ${gameIdquery}
     ${statusQuery}
     ${startDateQuery}
+    ${offset}
+    ${limit}
     ${orderBy}`,
     rowMode: "array",
   });
