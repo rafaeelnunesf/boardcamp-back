@@ -94,6 +94,7 @@ export async function postRentals(req, res) {
       return res.status(400).send("gameId error");
     const rentDate = dayjs().format("YYYY-MM-DD");
     const originalPrice = gameIdResult.rows[0].pricePerDay * daysRented;
+    let { stockTotal } = gameIdResult.rows[0];
 
     await connection.query(
       `
@@ -101,6 +102,18 @@ export async function postRentals(req, res) {
         rentals ("customerId", "gameId", "rentDate","daysRented", "returnDate", "originalPrice", "delayFee")
         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [customerId, gameId, rentDate, daysRented, null, originalPrice, null]
+    );
+
+    stockTotal--;
+    await connection.query(
+      `
+      UPDATE 
+        games
+      SET 
+        "stockTotal"=$1
+      WHERE 
+        id=$2`,
+      [stockTotal, gameId]
     );
     res.sendStatus(201);
   } catch (error) {
@@ -114,7 +127,8 @@ export async function postRentalsById(req, res) {
     const idResult = await connection.query(
       `SELECT 
         rentals.*,
-        games."pricePerDay" 
+        games."pricePerDay",
+        games."stockTotal"
       FROM 
         rentals 
       JOIN 
@@ -127,7 +141,8 @@ export async function postRentalsById(req, res) {
     );
     if (idResult.rows.length === 0) return res.sendStatus(404);
 
-    let { delayFee, returnDate, rentDate, daysRented } = idResult.rows[0];
+    let { delayFee, returnDate, rentDate, daysRented, gameId, stockTotal } =
+      idResult.rows[0];
     if (returnDate) return res.sendStatus(400);
 
     returnDate = dayjs().format("YYYY-MM-DD");
@@ -149,26 +164,45 @@ export async function postRentalsById(req, res) {
         id=$3`,
       [returnDate, delayFee, id]
     );
+    stockTotal++;
+    await connection.query(
+      `
+      UPDATE 
+        games
+      SET 
+        "stockTotal"=$1
+      WHERE 
+        id=$2`,
+      [stockTotal, gameId]
+    );
     res.sendStatus(200);
   } catch (error) {
     console.log(error);
     res.sendStatus(500);
   }
 }
-export async function getRentalsById(req, res) {
-  /* const { id } = req.params;
+export async function deleteRentalsById(req, res) {
+  const { id } = req.params;
   const result = await connection.query(
     `
       SELECT 
         * 
       FROM 
-        customers
+        rentals
       WHERE
         id=$1`,
     [id]
   );
-
   if (result.rows.length === 0) return res.sendStatus(404);
-
-  res.send(result.rows); */
+  if (result.rows[0].returnDate) return res.sendStatus(400);
+  await connection.query(
+    `
+      DELETE 
+      FROM 
+        rentals
+      WHERE
+        id=$1`,
+    [id]
+  );
+  res.sendStatus(200);
 }
